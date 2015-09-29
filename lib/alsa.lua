@@ -35,7 +35,7 @@ M.__control_pattern = "^Simple mixer control '(%a+)'"
 
 -- get all alsa volumes as a table:
 function M:getVolumes()
-  local fd = io.popen("amixer -c0 scontents")
+  local fd = io.popen("amixer -c1 scontents")
   local volumes = fd:read("*all")
   fd:close()
 
@@ -109,7 +109,7 @@ end
 --  that amixer can recognize 3dB+
 --
 function M:setVolume(ctrl, level)
-  io.popen("amixer -c0 set " .. ctrl .. ' ' .. level):close()
+  io.popen("amixer sset " .. ctrl .. ' ' .. level):close()
   return self:getVolume(ctrl)
 end
 
