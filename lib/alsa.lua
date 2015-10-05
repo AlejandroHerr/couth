@@ -34,8 +34,8 @@ M.__mute_pattern = '%[(o[nf]+)%]'
 M.__control_pattern = "^Simple mixer control '(%a+)'"
 
 -- get all alsa volumes as a table:
-function M:getVolumes()
-  local fd = io.popen("amixer -c1 scontents")
+function M:getVolumes(card)
+  local fd = io.popen("amixer "..card.." scontents")
   local volumes = fd:read("*all")
   fd:close()
 
@@ -84,10 +84,11 @@ end
 --                   a visual indicator of the volume control we are adjusting
 --                   so we know if we accidentally hit the wrong key.
 --
-function M:getVolume(ctrlToHighlight)
+function M:getVolume(card,ctrlToHighlight)
+  if card == nil then card = '' end
   local ret = {}
   local vol, mute
-  local volumes = self:getVolumes()
+  local volumes = self:getVolumes(card)
   local pad_width = couth.string.maxLen(couth.CONFIG.ALSA_CONTROLS)
 
   for _,ctrl in ipairs(couth.CONFIG.ALSA_CONTROLS) do
@@ -108,9 +109,9 @@ end
 --  level can be "toggle" to toggle mute/unmute or any other string
 --  that amixer can recognize 3dB+
 --
-function M:setVolume(ctrl, level)
-  io.popen("amixer sset " .. ctrl .. ' ' .. level):close()
-  return self:getVolume(ctrl)
+function M:setVolume(card,ctrl, level)
+  io.popen("amixer "..card.." sset " .. ctrl .. ' ' .. level):close()
+  return self:getVolume(card,ctrl)
 end
 
 couth.alsa = M
