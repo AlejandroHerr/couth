@@ -35,12 +35,13 @@ if not couth.CONFIG then
 
 		-- The font to use for notifications. You should use a mono-space font so
 		-- the columns are evenly aligned.
-    NOTIFIER_FONT = beautiful.notification.presets.couth.font,
+    NOTIFIER_FONT = naughty.config.presets.normal.font,
     NOTIFIER_POSITION = 'top_right',
     NOTIFIER_TIMEOUT = 5,
-    NOTIFIER_FOCUS_FG = beautiful.notification.fg_focus,
-    NOTIFIER_FG = beautiful.notification.fg_normal,
-    NOTIFIER_BG = beautiful.notification.bg_normal
+    NOTIFIER_FOCUS_FG = naughty.config.presets.critical.fg,
+    NOTIFIER_FG = naughty.config.presets.normal.fg,
+    NOTIFIER_BG = naughty.config.presets.normal.bg,
+    HOVER_TIMEOUT = 0.2
 
   } 
 end
@@ -119,6 +120,7 @@ function couth.notifier:notify(msg)
     bg = couth.CONFIG.NOTIFIER_BG,
     position = couth.CONFIG.NOTIFIER_POSITION,
     timeout = couth.CONFIG.NOTIFIER_TIMEOUT,
+    hover_timeout = couth.CONFIG.HOVER_TIMEOUT,
     replaces_id = self.id
   }).id
 end
