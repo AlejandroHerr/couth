@@ -35,43 +35,45 @@ M.__control_pattern = "^Simple mixer control '(%a+)'"
 
 -- get all alsa volumes as a table:
 function M:getVolumes(card)
-  local fd = io.popen("amixer "..card.." scontents")
-  local volumes = fd:read("*all")
-  fd:close()
+    local fd = io.popen("amixer " .. card .. " scontents")
+    local volumes = fd:read("*all")
+    fd:close()
 
-  local n=1
-  local ret = {}
+    local n=1
+    local ret = {}
 
-  local controls = {}
-  for i,v in pairs(couth.CONFIG.ALSA_CONTROLS) do controls[v]=1 end
+    local controls = {}
+    for i,v in pairs(couth.CONFIG.ALSA_CONTROLS) do controls[v]=1 end
 
-  local m, ctrl, vol, mute
-  for line in volumes:gmatch("[^\n]+") do 
-    if couth.count_keys(controls) > 0 then
-      _,_,m = line:find(self.__control_pattern)
-      if m and controls[m] then 
-        ctrl = m 
-      else
-        _,_,vol = line:find(self.__volume_pattern)
-        if ctrl and vol and controls[ctrl] then
-          ret[ctrl] = {vol = vol}
-          _,_,mute=line:find(self.__mute_pattern) 
-          if mute then ret[ctrl]['mute'] = mute end
-          controls[ctrl], vol, mute, ctrl = nil
+    local m, ctrl, vol, mute
+    for line in volumes:gmatch("[^\n]+") do 
+        if couth.count_keys(controls) > 0 then
+            _,_,m = line:find(self.__control_pattern)
+            if m and controls[m] then 
+                ctrl = m 
+            else
+                _,_,vol = line:find(self.__volume_pattern)
+                if ctrl and vol and controls[ctrl] then
+                    ret[ctrl] = {vol = vol}
+                    _,_,mute=line:find(self.__mute_pattern) 
+                    if mute then ret[ctrl]['mute'] = mute end
+                    controls[ctrl], vol, mute, ctrl = nil
+                end
+            end
         end
-      end
     end
-  end
-  return ret
+    
+    return ret
 end
 
 function M:muteIndicator(isOrOff)
-  if not isOrOff then return '   ' end
-  if isOrOff == 'on' then
-    return '[ ]'
-  end
-  -- off means the ctrl is mute
-  return '[M]'
+    if not isOrOff then return '   ' end
+    if isOrOff == 'on' then
+        return '[ ]'
+    end
+
+    -- off means the ctrl is mute
+    return '[M]'
 end
 
 --
@@ -84,34 +86,34 @@ end
 --                   a visual indicator of the volume control we are adjusting
 --                   so we know if we accidentally hit the wrong key.
 --
-function M:getVolume(card,ctrlToHighlight)
-  if card == nil then card = '' end
-  local ret = {}
-  local vol, mute
-  local volumes = self:getVolumes(card)
-  local pad_width = couth.string.maxLen(couth.CONFIG.ALSA_CONTROLS)
+function M:getVolume(card, ctrlToHighlight)
+    if card == nil then card = '' end
+    local ret = {}
+    local vol, mute
+    local volumes = self:getVolumes(card)
+    local pad_width = couth.string.maxLen(couth.CONFIG.ALSA_CONTROLS)
 
-  for _,ctrl in ipairs(couth.CONFIG.ALSA_CONTROLS) do
-    if volumes[ctrl] then
-      local prefix, suffix = '',''
-      if ctrl == ctrlToHighlight then
-        prefix,suffix = '<span color="'.. couth.CONFIG.NOTIFIER_FOCUS_FG ..'">',"</span>"
-      end
-      table.insert(ret, prefix .. couth.string.rpad(ctrl, pad_width) .. ': '
-        .. self:muteIndicator(volumes[ctrl]['mute']) .. ' '
-        .. couth.indicator.barIndicator(volumes[ctrl]['vol']) .. suffix)
+    for _,ctrl in ipairs(couth.CONFIG.ALSA_CONTROLS) do
+        if volumes[ctrl] then
+            local prefix, suffix = '',''
+            if ctrl == ctrlToHighlight then
+                prefix,suffix = '<span color="' .. couth.CONFIG.NOTIFIER_FOCUS_FG .. '">',"</span>"
+            end
+            table.insert(ret, prefix .. couth.string.rpad(ctrl, pad_width) .. ': ' .. self:muteIndicator(volumes[ctrl]['mute']) .. ' ' .. couth.indicator.barIndicator(volumes[ctrl]['vol']) .. suffix)
+        end
     end
-  end
-  return table.concat(ret,"\n")
+
+    return table.concat(ret,"\n")
 end
 
 --
 --  level can be "toggle" to toggle mute/unmute or any other string
 --  that amixer can recognize 3dB+
 --
-function M:setVolume(card,ctrl, level)
-  io.popen("amixer "..card.." sset " .. ctrl .. ' ' .. level):close()
-  return self:getVolume(card,ctrl)
+function M:setVolume(card, ctrl, level)
+    io.popen("amixer " .. card .. " sset " .. ctrl .. ' ' .. level):close()
+    
+    return self:getVolume(card,ctrl)
 end
 
 couth.alsa = M
