@@ -88,6 +88,15 @@ function couth.string.rpad(str, width)
   return str .. string.rep(' ', width - str:len())
 end
 
+--[[function couth.string.prefix(ctrl)
+  if ctrl == 'Headphone' then
+    return '🎧 '
+  elseif ctrl == 'Speaker' then
+    return '🔊 '
+  end
+  return '🎜'
+end]]
+
 --
 --  indicator functions
 --
